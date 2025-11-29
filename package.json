@@ -1,0 +1,28 @@
+{
+  "name": "streamrank-ai",
+  "version": "1.0.0",
+  "description": "Discover and search streaming content ranked by Rotten Tomatoes scores using Google Gemini AI.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lucide-react": "^0.330.0",
+    "@google/genai": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.1.0",
+    "tailwindcss": "^3.4.1",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "typescript": "^5.3.3"
+  },
+  "author": "AI Engineer",
+  "license": "MIT"
+}
