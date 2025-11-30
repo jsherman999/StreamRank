@@ -3,6 +3,25 @@ import { StreamingService, ShowData } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
 
+// Debug logging system
+type DebugListener = (type: 'request' | 'response' | 'error' | 'cache', message: string) => void;
+const debugListeners: DebugListener[] = [];
+
+export const addDebugListener = (listener: DebugListener) => {
+  debugListeners.push(listener);
+};
+
+export const removeDebugListener = (listener: DebugListener) => {
+  const index = debugListeners.indexOf(listener);
+  if (index > -1) {
+    debugListeners.splice(index, 1);
+  }
+};
+
+const logDebug = (type: 'request' | 'response' | 'error' | 'cache', message: string) => {
+  debugListeners.forEach(listener => listener(type, message));
+};
+
 // Cache interface
 interface CacheEntry {
   data: ShowData[];
@@ -23,10 +42,14 @@ const getFromCache = (key: string): ShowData[] | null => {
   const entry = cache.get(key);
   if (entry && isCacheValid(entry)) {
     console.log(`Cache hit for: ${key}`);
+    logDebug('cache', `CACHE HIT: ${key} (${entry.data.length} items)`);
     return entry.data;
   }
   if (entry) {
     cache.delete(key); // Remove expired entry
+    logDebug('cache', `CACHE EXPIRED: ${key}`);
+  } else {
+    logDebug('cache', `CACHE MISS: ${key}`);
   }
   return null;
 };
@@ -35,6 +58,7 @@ const getFromCache = (key: string): ShowData[] | null => {
 const saveToCache = (key: string, data: ShowData[]): void => {
   cache.set(key, { data, timestamp: Date.now() });
   console.log(`Cached data for: ${key}`);
+  logDebug('cache', `SAVED TO CACHE: ${key} (${data.length} items, expires in 24h)`);
 };
 
 const SYSTEM_INSTRUCTION = `
@@ -114,6 +138,8 @@ const commonConfig = {
 export const fetchShows = async (service: StreamingService): Promise<ShowData[]> => {
   const cacheKey = `trending-${service}`;
   
+  logDebug('request', `FETCH TRENDING: ${service}`);
+  
   // Check cache first
   const cachedData = getFromCache(cacheKey);
   if (cachedData) {
@@ -147,14 +173,20 @@ export const fetchShows = async (service: StreamingService): Promise<ShowData[]>
     \`\`\`
     `;
 
+    logDebug('request', `REQUEST SENT: model=gemini-2.5-flash, service=${service}, type=trending`);
+    
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
       config: commonConfig,
     });
 
+    logDebug('response', `RESPONSE RECEIVED: ${response.text?.substring(0, 100)}...`);
+    
     const parsedData = parseGeminiResponse(response.text);
     const data = mapToShowData(parsedData, service);
+    
+    logDebug('response', `PARSED ${data.length} shows from ${service}`);
     
     // Cache the results
     saveToCache(cacheKey, data);
@@ -163,6 +195,7 @@ export const fetchShows = async (service: StreamingService): Promise<ShowData[]>
 
   } catch (error: any) {
     console.error("Gemini API Error (Trending):", error);
+    logDebug('error', `FETCH ERROR: ${service} - ${error.message}`);
     // Provide more context about the error
     if (error?.message?.includes('timeout') || error?.message?.includes('DEADLINE_EXCEEDED')) {
       throw new Error(`Request timed out for ${service}. The service may be experiencing high load. Please try again.`);
@@ -173,6 +206,8 @@ export const fetchShows = async (service: StreamingService): Promise<ShowData[]>
 
 export const searchShows = async (service: StreamingService, query: string): Promise<ShowData[]> => {
   const cacheKey = `search-${service}-${query.toLowerCase().trim()}`;
+  
+  logDebug('request', `SEARCH: "${query}" on ${service}`);
   
   // Check cache first
   const cachedData = getFromCache(cacheKey);
@@ -200,14 +235,20 @@ export const searchShows = async (service: StreamingService, query: string): Pro
     \`\`\`
     `;
 
+    logDebug('request', `REQUEST SENT: model=gemini-2.5-flash, query="${query}", service=${service}`);
+    
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
       config: commonConfig,
     });
 
+    logDebug('response', `RESPONSE RECEIVED: ${response.text?.substring(0, 100)}...`);
+    
     const parsedData = parseGeminiResponse(response.text);
     const data = mapToShowData(parsedData, service);
+    
+    logDebug('response', `PARSED ${data.length} results for "${query}" on ${service}`);
     
     // Cache the search results
     saveToCache(cacheKey, data);
@@ -216,6 +257,7 @@ export const searchShows = async (service: StreamingService, query: string): Pro
 
   } catch (error) {
     console.error("Gemini API Error (Search):", error);
+    logDebug('error', `SEARCH ERROR: "${query}" on ${service} - ${error}`);
     throw new Error(`Could not search for "${query}" on ${service}. Please try again.`);
   }
 };
@@ -223,6 +265,8 @@ export const searchShows = async (service: StreamingService, query: string): Pro
 // New function: Search across all streaming services
 export const searchAllServices = async (query: string): Promise<ShowData[]> => {
   const cacheKey = `search-all-${query.toLowerCase().trim()}`;
+  
+  logDebug('request', `SEARCH ALL SERVICES: "${query}"`);
   
   // Check cache first
   const cachedData = getFromCache(cacheKey);
@@ -260,12 +304,16 @@ export const searchAllServices = async (query: string): Promise<ShowData[]> => {
     \`\`\`
     `;
 
+    logDebug('request', `REQUEST SENT: model=gemini-2.5-flash, query="${query}", type=all-services`);
+    
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
       config: commonConfig,
     });
 
+    logDebug('response', `RESPONSE RECEIVED: ${response.text?.substring(0, 100)}...`);
+    
     const parsedData = parseGeminiResponse(response.text);
     const data = parsedData.map((item: any, index: number) => ({
       id: `all-${index}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -280,6 +328,8 @@ export const searchAllServices = async (query: string): Promise<ShowData[]> => {
       service: item.service || "Multiple Services"
     }));
     
+    logDebug('response', `PARSED ${data.length} results across all services for "${query}"`);
+    
     // Cache the results
     saveToCache(cacheKey, data);
     
@@ -287,6 +337,7 @@ export const searchAllServices = async (query: string): Promise<ShowData[]> => {
 
   } catch (error) {
     console.error("Gemini API Error (Search All):", error);
+    logDebug('error', `SEARCH ALL ERROR: "${query}" - ${error}`);
     throw new Error(`Could not search for "${query}" across services. Please try again.`);
   }
 };

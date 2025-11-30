@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StreamingService, SortOption, ShowData } from './types';
-import { fetchShows, searchShows, searchAllServices } from './services/geminiService';
+import { fetchShows, searchShows, searchAllServices, addDebugListener, removeDebugListener } from './services/geminiService';
 import { Header } from './components/Header';
 import { ServiceTabs } from './components/ServiceTabs';
 import { ShowList } from './components/ShowList';
@@ -8,6 +8,7 @@ import { Loader } from './components/Loader';
 import { ErrorMessage } from './components/ErrorMessage';
 import { SortControls } from './components/SortControls';
 import { SearchBar } from './components/SearchBar';
+import { DebugWindow, DebugLog } from './components/DebugWindow';
 import { DEFAULT_SERVICE } from './constants';
 
 const App: React.FC = () => {
@@ -18,6 +19,22 @@ const App: React.FC = () => {
   const [sortOption, setSortOption] = useState<SortOption>(SortOption.CRITIC_SCORE);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
+
+  // Setup debug listener
+  useEffect(() => {
+    const listener = (type: 'request' | 'response' | 'error' | 'cache', message: string) => {
+      const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+      setDebugLogs(prev => {
+        const newLogs = [...prev, { timestamp, type, message }];
+        // Keep only last 1000 entries
+        return newLogs.slice(-1000);
+      });
+    };
+    
+    addDebugListener(listener);
+    return () => removeDebugListener(listener);
+  }, []);
 
   const loadData = useCallback(async (service: StreamingService, query?: string) => {
     setLoading(true);
@@ -197,6 +214,8 @@ const App: React.FC = () => {
           iRankThee &copy; {new Date().getFullYear()}
         </p>
       </footer>
+      
+      <DebugWindow logs={debugLogs} />
     </div>
   );
 };
