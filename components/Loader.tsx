@@ -12,11 +12,11 @@ export const Loader: React.FC<LoaderProps> = ({ serviceName }) => {
     // Simulate counting movies being discovered
     const countInterval = setInterval(() => {
       setCount(prev => {
-        if (prev >= 50) return 50;
+        if (prev >= 30) return 30;
         // Random increment between 1-3 for more natural feel
-        return Math.min(prev + Math.floor(Math.random() * 3) + 1, 50);
+        return Math.min(prev + Math.floor(Math.random() * 3) + 1, 30);
       });
-    }, 300);
+    }, 400);
 
     // Animate dots
     const dotsInterval = setInterval(() => {

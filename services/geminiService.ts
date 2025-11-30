@@ -122,7 +122,7 @@ export const fetchShows = async (service: StreamingService): Promise<ShowData[]>
 
   try {
     const prompt = `
-    Find 50 currently trending or highly-rated TV shows or movies available on ${service}.
+    Find 30 currently trending or highly-rated TV shows or movies available on ${service}.
     
     Step 1: Use the search tool to verify availability and get current Rotten Tomatoes scores.
     Step 2: Write a brief summary of what you found.
@@ -161,9 +161,13 @@ export const fetchShows = async (service: StreamingService): Promise<ShowData[]>
     
     return data;
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini API Error (Trending):", error);
-    throw new Error("Could not fetch show data. Please try again later.");
+    // Provide more context about the error
+    if (error?.message?.includes('timeout') || error?.message?.includes('DEADLINE_EXCEEDED')) {
+      throw new Error(`Request timed out for ${service}. The service may be experiencing high load. Please try again.`);
+    }
+    throw new Error(`Could not fetch ${service} data. Please try again later.`);
   }
 };
 
@@ -178,7 +182,7 @@ export const searchShows = async (service: StreamingService, query: string): Pro
 
   try {
     const prompt = `
-    Search for "${query}" on ${service}. Find up to 50 matches.
+    Search for "${query}" on ${service}. Find up to 30 matches.
     If exact matches aren't found, list best available alternatives on ${service}.
 
     Step 1: Search for the titles and their scores.
@@ -229,7 +233,7 @@ export const searchAllServices = async (query: string): Promise<ShowData[]> => {
   try {
     const prompt = `
     Search for "${query}" across ALL major streaming services (Netflix, HBO Max, Apple TV+, Disney+, Hulu, Prime Video).
-    Find up to 50 matches total, distributed across all services where available.
+    Find up to 30 matches total, distributed across all services where available.
     Include which service each title is available on.
     
     Step 1: Use the search tool to find titles matching "${query}" on multiple streaming platforms.
