@@ -28,9 +28,9 @@ interface CacheEntry {
   timestamp: number;
 }
 
-// Cache store (24 hour expiry)
+// Cache store (24 hour expiry) - using localStorage for persistence
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-const cache = new Map<string, CacheEntry>();
+const CACHE_KEY_PREFIX = 'irankthee_cache_';
 
 // Helper to check if cache is valid
 const isCacheValid = (entry: CacheEntry): boolean => {
@@ -39,26 +39,82 @@ const isCacheValid = (entry: CacheEntry): boolean => {
 
 // Helper to get from cache
 const getFromCache = (key: string): ShowData[] | null => {
-  const entry = cache.get(key);
-  if (entry && isCacheValid(entry)) {
-    console.log(`Cache hit for: ${key}`);
-    logDebug('cache', `CACHE HIT: ${key} (${entry.data.length} items)`);
-    return entry.data;
-  }
-  if (entry) {
-    cache.delete(key); // Remove expired entry
+  try {
+    const storageKey = CACHE_KEY_PREFIX + key;
+    const cached = localStorage.getItem(storageKey);
+    if (!cached) {
+      logDebug('cache', `CACHE MISS: ${key}`);
+      return null;
+    }
+    
+    const entry: CacheEntry = JSON.parse(cached);
+    if (entry && isCacheValid(entry)) {
+      console.log(`Cache hit for: ${key}`);
+      logDebug('cache', `CACHE HIT: ${key} (${entry.data.length} items)`);
+      return entry.data;
+    }
+    
+    // Remove expired entry
+    localStorage.removeItem(storageKey);
     logDebug('cache', `CACHE EXPIRED: ${key}`);
-  } else {
-    logDebug('cache', `CACHE MISS: ${key}`);
+    return null;
+  } catch (error) {
+    console.error('Cache read error:', error);
+    return null;
   }
-  return null;
 };
 
 // Helper to save to cache
 const saveToCache = (key: string, data: ShowData[]): void => {
-  cache.set(key, { data, timestamp: Date.now() });
-  console.log(`Cached data for: ${key}`);
-  logDebug('cache', `SAVED TO CACHE: ${key} (${data.length} items, expires in 24h)`);
+  try {
+    const storageKey = CACHE_KEY_PREFIX + key;
+    const entry: CacheEntry = { data, timestamp: Date.now() };
+    localStorage.setItem(storageKey, JSON.stringify(entry));
+    console.log(`Cached data for: ${key}`);
+    logDebug('cache', `SAVED TO CACHE: ${key} (${data.length} items, expires in 24h)`);
+  } catch (error) {
+    console.error('Cache write error:', error);
+    // If localStorage is full, try to clear old entries
+    if (error instanceof Error && error.name === 'QuotaExceededError') {
+      clearExpiredCache();
+      // Try one more time after clearing
+      try {
+        const storageKey = CACHE_KEY_PREFIX + key;
+        const entry: CacheEntry = { data, timestamp: Date.now() };
+        localStorage.setItem(storageKey, JSON.stringify(entry));
+        logDebug('cache', `SAVED TO CACHE (after cleanup): ${key}`);
+      } catch (e) {
+        console.error('Cache write failed after cleanup:', e);
+      }
+    }
+  }
+};
+
+// Helper to clear expired cache entries
+const clearExpiredCache = (): void => {
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(CACHE_KEY_PREFIX)) {
+        const cached = localStorage.getItem(key);
+        if (cached) {
+          try {
+            const entry: CacheEntry = JSON.parse(cached);
+            if (!isCacheValid(entry)) {
+              keysToRemove.push(key);
+            }
+          } catch (e) {
+            keysToRemove.push(key); // Remove corrupted entries
+          }
+        }
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    logDebug('cache', `CACHE CLEANUP: Removed ${keysToRemove.length} expired entries`);
+  } catch (error) {
+    console.error('Cache cleanup error:', error);
+  }
 };
 
 const SYSTEM_INSTRUCTION = `

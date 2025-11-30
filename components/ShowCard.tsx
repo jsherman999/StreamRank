@@ -19,19 +19,21 @@ export const ShowCard: React.FC<ShowCardProps> = ({ show, sortOption, rank }) =>
         className="group relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 hover:border-slate-600 transition-all duration-300 hover:shadow-2xl hover:shadow-red-900/10 hover:-translate-y-1 flex flex-col cursor-pointer"
         onClick={() => setIsModalOpen(true)}
       >
-      {/* Rank Badge */}
-      <div className="absolute top-2 left-2 z-10 w-8 h-8 flex items-center justify-center bg-slate-950/80 backdrop-blur rounded-full border border-slate-700 text-white font-bold text-sm shadow-lg">
-        #{rank}
+      {/* Rank Badge with Title */}
+      <div className="absolute top-2 left-2 z-10 flex items-center gap-2">
+        <div className="w-8 h-8 flex items-center justify-center bg-slate-950/80 backdrop-blur rounded-full border border-slate-700 text-white font-bold text-sm shadow-lg">
+          #{rank}
+        </div>
       </div>
 
-      <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 p-6">
+      <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 p-6 pt-12">
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-90" />
         
         <div className="relative z-10">
-           <div className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">
+           <h3 className="text-base font-bold text-white leading-tight line-clamp-2 mb-2">{show.title}</h3>
+           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
              {show.genre} • {show.year}
            </div>
-           <h3 className="text-base font-bold text-white leading-tight line-clamp-2 mb-2">{show.title}</h3>
            {show.service && (
              <div className="text-xs font-semibold text-violet-400 uppercase tracking-wider mt-2">
                ▶ Streaming on {show.service}
