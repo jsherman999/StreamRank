@@ -9,7 +9,7 @@ interface ShowListProps {
 
 export const ShowList: React.FC<ShowListProps> = ({ shows, sortOption }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 animate-fade-in">
       {shows.map((show, index) => (
         <ShowCard 
           key={show.id} 

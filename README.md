@@ -1,6 +1,6 @@
-# iRankThee AI
+# iRankThee
 
-iRankThee AI is a web application that helps users discover and search for movies and TV shows across popular streaming platforms (Netflix, HBO Max, Apple TV+, etc.). It leverages the **Google Gemini API** (specifically the `gemini-2.5-flash` model with Google Search grounding) to fetch real-time availability and Rotten Tomatoes scores.
+iRankThee is a web application that helps users discover and search for movies and TV shows across popular streaming platforms (Netflix, HBO Max, Apple TV+, etc.). It leverages the **Google Gemini API** (specifically the `gemini-2.5-flash` model with Google Search grounding) to fetch real-time availability and Rotten Tomatoes scores.
 
 ## Features
 

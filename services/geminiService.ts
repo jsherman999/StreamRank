@@ -3,6 +3,40 @@ import { StreamingService, ShowData } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
 
+// Cache interface
+interface CacheEntry {
+  data: ShowData[];
+  timestamp: number;
+}
+
+// Cache store (24 hour expiry)
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const cache = new Map<string, CacheEntry>();
+
+// Helper to check if cache is valid
+const isCacheValid = (entry: CacheEntry): boolean => {
+  return Date.now() - entry.timestamp < CACHE_DURATION;
+};
+
+// Helper to get from cache
+const getFromCache = (key: string): ShowData[] | null => {
+  const entry = cache.get(key);
+  if (entry && isCacheValid(entry)) {
+    console.log(`Cache hit for: ${key}`);
+    return entry.data;
+  }
+  if (entry) {
+    cache.delete(key); // Remove expired entry
+  }
+  return null;
+};
+
+// Helper to save to cache
+const saveToCache = (key: string, data: ShowData[]): void => {
+  cache.set(key, { data, timestamp: Date.now() });
+  console.log(`Cached data for: ${key}`);
+};
+
 const SYSTEM_INSTRUCTION = `
 You are a specialized streaming content assistant. 
 Your goal is to find content on a specific streaming service using the provided tools.
@@ -78,10 +112,17 @@ const commonConfig = {
 };
 
 export const fetchShows = async (service: StreamingService): Promise<ShowData[]> => {
+  const cacheKey = `trending-${service}`;
+  
+  // Check cache first
+  const cachedData = getFromCache(cacheKey);
+  if (cachedData) {
+    return cachedData;
+  }
+
   try {
-    // We request fewer items (10) to reduce latency and "empty response" errors due to timeouts
     const prompt = `
-    Find 10 currently trending or highly-rated TV shows or movies available on ${service}.
+    Find 50 currently trending or highly-rated TV shows or movies available on ${service}.
     
     Step 1: Use the search tool to verify availability and get current Rotten Tomatoes scores.
     Step 2: Write a brief summary of what you found.
@@ -113,7 +154,12 @@ export const fetchShows = async (service: StreamingService): Promise<ShowData[]>
     });
 
     const parsedData = parseGeminiResponse(response.text);
-    return mapToShowData(parsedData, service);
+    const data = mapToShowData(parsedData, service);
+    
+    // Cache the results
+    saveToCache(cacheKey, data);
+    
+    return data;
 
   } catch (error) {
     console.error("Gemini API Error (Trending):", error);
@@ -122,9 +168,17 @@ export const fetchShows = async (service: StreamingService): Promise<ShowData[]>
 };
 
 export const searchShows = async (service: StreamingService, query: string): Promise<ShowData[]> => {
+  const cacheKey = `search-${service}-${query.toLowerCase().trim()}`;
+  
+  // Check cache first
+  const cachedData = getFromCache(cacheKey);
+  if (cachedData) {
+    return cachedData;
+  }
+
   try {
     const prompt = `
-    Search for "${query}" on ${service}. Find up to 10 matches.
+    Search for "${query}" on ${service}. Find up to 50 matches.
     If exact matches aren't found, list best available alternatives on ${service}.
 
     Step 1: Search for the titles and their scores.
@@ -149,10 +203,86 @@ export const searchShows = async (service: StreamingService, query: string): Pro
     });
 
     const parsedData = parseGeminiResponse(response.text);
-    return mapToShowData(parsedData, service);
+    const data = mapToShowData(parsedData, service);
+    
+    // Cache the search results
+    saveToCache(cacheKey, data);
+    
+    return data;
 
   } catch (error) {
     console.error("Gemini API Error (Search):", error);
     throw new Error(`Could not search for "${query}" on ${service}. Please try again.`);
+  }
+};
+
+// New function: Search across all streaming services
+export const searchAllServices = async (query: string): Promise<ShowData[]> => {
+  const cacheKey = `search-all-${query.toLowerCase().trim()}`;
+  
+  // Check cache first
+  const cachedData = getFromCache(cacheKey);
+  if (cachedData) {
+    return cachedData;
+  }
+
+  try {
+    const prompt = `
+    Search for "${query}" across ALL major streaming services (Netflix, HBO Max, Apple TV+, Disney+, Hulu, Prime Video).
+    Find up to 50 matches total, distributed across all services where available.
+    Include which service each title is available on.
+    
+    Step 1: Use the search tool to find titles matching "${query}" on multiple streaming platforms.
+    Step 2: Briefly summarize your findings.
+    Step 3: Output the data in a strict JSON array format inside a markdown code block.
+
+    For each item, include:
+    - title
+    - criticScore (number 0-100)
+    - audienceScore (number 0-100)
+    - year
+    - summary (one sentence)
+    - serviceLink (URL to watch - use the actual streaming service URL)
+    - rtLink (URL to Rotten Tomatoes)
+    - genre
+    - service (which streaming service: Netflix, HBO Max, Apple TV+, Disney+, Hulu, or Prime Video)
+
+    Example format:
+    Here are the matches I found across services...
+    \`\`\`json
+    [
+      { "title": "Show Name", "service": "Netflix", "criticScore": 95, ... }
+    ]
+    \`\`\`
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: commonConfig,
+    });
+
+    const parsedData = parseGeminiResponse(response.text);
+    const data = parsedData.map((item: any, index: number) => ({
+      id: `all-${index}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      title: item.title ? String(item.title) : "Unknown Title",
+      year: item.year ? String(item.year) : "N/A",
+      criticScore: typeof item.criticScore === 'number' ? item.criticScore : null,
+      audienceScore: typeof item.audienceScore === 'number' ? item.audienceScore : null,
+      summary: item.summary || "No summary available.",
+      serviceLink: item.serviceLink || null,
+      rtLink: item.rtLink || null,
+      genre: item.genre || "N/A",
+      service: item.service || "Multiple Services"
+    }));
+    
+    // Cache the results
+    saveToCache(cacheKey, data);
+    
+    return data;
+
+  } catch (error) {
+    console.error("Gemini API Error (Search All):", error);
+    throw new Error(`Could not search for "${query}" across services. Please try again.`);
   }
 };

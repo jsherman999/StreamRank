@@ -1,5 +1,5 @@
 {
-  "name": "irankthee-ai",
+  "name": "irankthee",
   "version": "1.0.0",
   "type": "module",
   "description": "Discover and search streaming content ranked by Rotten Tomatoes scores using Google Gemini AI.",

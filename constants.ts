@@ -1,8 +1,14 @@
 import { StreamingService, ServiceConfig } from './types';
 
-export const DEFAULT_SERVICE = StreamingService.NETFLIX;
+export const DEFAULT_SERVICE = StreamingService.ALL_SERVICES;
 
 export const SERVICES: ServiceConfig[] = [
+  { 
+    id: StreamingService.ALL_SERVICES, 
+    name: 'All Services', 
+    color: 'from-violet-600 to-fuchsia-900',
+    icon: '⊛' 
+  },
   { 
     id: StreamingService.NETFLIX, 
     name: 'Netflix', 

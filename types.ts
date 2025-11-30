@@ -1,4 +1,5 @@
 export enum StreamingService {
+  ALL_SERVICES = 'All Services',
   NETFLIX = 'Netflix',
   HBO_MAX = 'Max',
   APPLE_TV = 'Apple TV+',
@@ -22,6 +23,7 @@ export interface ShowData {
   serviceLink: string | null;
   rtLink: string | null;
   genre: string;
+  service?: string; // Optional field to show which service when searching all
 }
 
 export interface ServiceConfig {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StreamingService, SortOption, ShowData } from './types';
-import { fetchShows, searchShows } from './services/geminiService';
+import { fetchShows, searchShows, searchAllServices } from './services/geminiService';
 import { Header } from './components/Header';
 import { ServiceTabs } from './components/ServiceTabs';
 import { ShowList } from './components/ShowList';
@@ -28,10 +28,31 @@ const App: React.FC = () => {
       let data: ShowData[];
       if (query && query.trim().length > 0) {
         setIsSearching(true);
-        data = await searchShows(service, query);
+        if (service === StreamingService.ALL_SERVICES) {
+          data = await searchAllServices(query);
+        } else {
+          data = await searchShows(service, query);
+        }
       } else {
         setIsSearching(false);
-        data = await fetchShows(service);
+        if (service === StreamingService.ALL_SERVICES) {
+          // For "All Services" without search, we could fetch from all or show a message
+          // Let's aggregate trending from all services
+          const allServices = [
+            StreamingService.NETFLIX,
+            StreamingService.HBO_MAX,
+            StreamingService.APPLE_TV,
+            StreamingService.DISNEY_PLUS,
+            StreamingService.HULU,
+            StreamingService.PRIME_VIDEO
+          ];
+          const allData = await Promise.all(
+            allServices.map(s => fetchShows(s))
+          );
+          data = allData.flat();
+        } else {
+          data = await fetchShows(service);
+        }
       }
       setShows(data);
     } catch (err: any) {
@@ -155,7 +176,7 @@ const App: React.FC = () => {
         <p>
           Data sourced via AI search grounding. Rotten Tomatoes scores are approximations based on search results.
           <br />
-          iRankThee AI &copy; {new Date().getFullYear()}
+          iRankThee &copy; {new Date().getFullYear()}
         </p>
       </footer>
     </div>

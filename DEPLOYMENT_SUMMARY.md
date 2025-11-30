@@ -1,8 +1,8 @@
-# iRankThee AI - Mac Mini M4 Pro Deployment Summary
+# iRankThee - Mac Mini M4 Pro Deployment Summary
 
 ## 🎉 Your App is Ready!
 
-iRankThee AI is now fully configured for Mac Mini M4 Pro deployment with two installation options:
+iRankThee is now fully configured for Mac Mini M4 Pro deployment with two installation options:
 
 ### ✅ What Has Been Set Up
 
@@ -167,10 +167,10 @@ npm run preview  # Preview production build
 ```bash
 ./deploy-podman.sh        # Deploy container
 ./setup-autostart.sh      # Setup auto-start
-podman logs -f irankthee-ai    # View logs
-podman stop irankthee-ai       # Stop container
-podman start irankthee-ai      # Start container
-podman restart irankthee-ai    # Restart container
+podman logs -f irankthee    # View logs
+podman stop irankthee       # Stop container
+podman start irankthee      # Start container
+podman restart irankthee    # Restart container
 ```
 
 ## 🎯 Features
@@ -275,7 +275,7 @@ podman machine start
 ```
 
 ### Getting Help:
-1. Check logs: `podman logs irankthee-ai`
+1. Check logs: `podman logs irankthee`
 2. Check browser console (F12)
 3. Review README.md
 4. Check QUICKSTART.md
@@ -348,7 +348,7 @@ Before first run:
 
 ## 🎉 You're Ready!
 
-Your iRankThee AI application is fully configured and ready to deploy on your Mac Mini M4 Pro!
+Your iRankThee application is fully configured and ready to deploy on your Mac Mini M4 Pro!
 
 ### Quick Start:
 ```bash

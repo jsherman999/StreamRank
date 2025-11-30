@@ -1,6 +1,6 @@
-# iRankThee AI - Quick Start Guide
+# iRankThee - Quick Start Guide
 
-This guide will help you get iRankThee AI running on your Mac Mini M4 Pro in under 5 minutes.
+This guide will help you get iRankThee running on your Mac Mini M4 Pro in under 5 minutes.
 
 ## Prerequisites Check
 
@@ -101,13 +101,13 @@ npm run dev
 ### Production Container
 ```bash
 # View logs
-podman logs -f irankthee-ai
+podman logs -f irankthee
 
 # Stop container
-podman stop irankthee-ai
+podman stop irankthee
 
 # Start container
-podman start irankthee-ai
+podman start irankthee
 ```
 
 ### Building for Production
@@ -122,7 +122,7 @@ npm run preview
 ## Getting Help
 
 - Check full documentation: `README.md`
-- View container logs: `podman logs irankthee-ai`
+- View container logs: `podman logs irankthee`
 - Check browser console (F12) for errors
 - Ensure API key is valid at https://aistudio.google.com/app/apikey
 
