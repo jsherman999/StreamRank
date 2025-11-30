@@ -211,13 +211,13 @@ export const fetchShows = async (service: StreamingService): Promise<ShowData[]>
     Step 3: Output the data in a strict JSON array format inside a markdown code block.
 
     For each item, include:
-    - title
+    - title (exact title as it appears on ${service})
     - criticScore (number 0-100)
     - audienceScore (number 0-100)
     - year
     - summary (one sentence)
-    - serviceLink (URL to watch on ${service})
-    - rtLink (URL to Rotten Tomatoes)
+    - serviceLink (IMPORTANT: Find the exact, direct URL to this specific show/movie's page on ${service} where users can watch it. Do NOT provide generic ${service} homepage URLs. Search for "[title] watch on ${service}" to find the correct link. If you cannot find a direct link, leave it null.)
+    - rtLink (URL to Rotten Tomatoes page for this specific title)
     - genre
 
     Example format:
@@ -280,7 +280,15 @@ export const searchShows = async (service: StreamingService, query: string): Pro
     Step 2: Briefly summarize your findings.
     Step 3: Output the data in a strict JSON array format inside a markdown code block.
 
-    Required fields per item: title, criticScore, audienceScore, year, summary, serviceLink, rtLink, genre.
+    Required fields per item: 
+    - title (exact title as shown on ${service})
+    - criticScore (number 0-100)
+    - audienceScore (number 0-100)
+    - year
+    - summary (one sentence)
+    - serviceLink (IMPORTANT: Find the exact, direct URL to this specific show/movie's page on ${service} where users can watch it. Search for "[title] watch on ${service}" to find the correct link. Do NOT provide generic homepage URLs. If you cannot find a direct link, leave it null.)
+    - rtLink (URL to Rotten Tomatoes)
+    - genre
 
     Example format:
     Found these results...
@@ -341,13 +349,13 @@ export const searchAllServices = async (query: string): Promise<ShowData[]> => {
     Step 3: Output the data in a strict JSON array format inside a markdown code block.
 
     For each item, include:
-    - title
+    - title (exact title as shown on the streaming service)
     - criticScore (number 0-100)
     - audienceScore (number 0-100)
     - year
     - summary (one sentence)
-    - serviceLink (URL to watch - use the actual streaming service URL)
-    - rtLink (URL to Rotten Tomatoes)
+    - serviceLink (IMPORTANT: Find the exact, direct URL to this specific show/movie's page on the streaming service where users can watch it. Search for "[title] watch on [service]" to find the correct link. Do NOT provide generic homepage URLs. If you cannot find a direct link, leave it null.)
+    - rtLink (URL to Rotten Tomatoes page for this specific title)
     - genre
     - service (which streaming service: Netflix, HBO Max, Apple TV+, Disney+, Hulu, or Prime Video)
 

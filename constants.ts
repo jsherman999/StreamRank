@@ -4,12 +4,6 @@ export const DEFAULT_SERVICE = StreamingService.NETFLIX;
 
 export const SERVICES: ServiceConfig[] = [
   { 
-    id: StreamingService.ALL_SERVICES, 
-    name: 'All Services', 
-    color: 'from-violet-600 to-fuchsia-900',
-    icon: '⊛' 
-  },
-  { 
     id: StreamingService.NETFLIX, 
     name: 'Netflix', 
     color: 'from-red-600 to-red-900',
@@ -25,7 +19,7 @@ export const SERVICES: ServiceConfig[] = [
     id: StreamingService.APPLE_TV, 
     name: 'Apple TV+', 
     color: 'from-slate-700 to-black',
-    icon: ''
+    icon: ''
   },
   { 
     id: StreamingService.DISNEY_PLUS, 
@@ -44,5 +38,11 @@ export const SERVICES: ServiceConfig[] = [
     name: 'Prime', 
     color: 'from-sky-500 to-blue-800',
     icon: 'P'
+  },
+  { 
+    id: StreamingService.ALL_SERVICES, 
+    name: 'All Services', 
+    color: 'from-violet-600 to-fuchsia-900',
+    icon: '⊛' 
   },
 ];

@@ -142,12 +142,16 @@ const App: React.FC = () => {
         <div className="mb-8 space-y-8">
           <div className="text-center space-y-2">
             <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-orange-400">
-              {isSearching ? 'Deep Catalog Search' : "What's Streaming Now?"}
+              {isSearching ? 'Deep Catalog Search' : (
+                <>
+                  iRankThee <span className="text-4xl md:text-5xl">Top 30</span>
+                </>
+              )}
             </h2>
             <p className="text-slate-400 text-lg">
               {isSearching 
                 ? `Searching specifically on ${selectedService}` 
-                : "Top rated shows on your favorite platforms, ranked by Rotten Tomatoes."}
+                : "Ranked by Rotten Tomatoes Score"}
             </p>
           </div>
 
