@@ -36,8 +36,7 @@ const App: React.FC = () => {
       } else {
         setIsSearching(false);
         if (service === StreamingService.ALL_SERVICES) {
-          // For "All Services" without search, we could fetch from all or show a message
-          // Let's aggregate trending from all services
+          // For "All Services" without search, aggregate trending from all services
           const allServices = [
             StreamingService.NETFLIX,
             StreamingService.HBO_MAX,
@@ -46,10 +45,29 @@ const App: React.FC = () => {
             StreamingService.HULU,
             StreamingService.PRIME_VIDEO
           ];
-          const allData = await Promise.all(
+          
+          // Fetch from each service and add service field to each show
+          const results = await Promise.allSettled(
             allServices.map(s => fetchShows(s))
           );
-          data = allData.flat();
+          
+          data = results
+            .map((result, index) => {
+              if (result.status === 'fulfilled') {
+                // Add service field to each show
+                return result.value.map(show => ({
+                  ...show,
+                  service: allServices[index]
+                }));
+              }
+              console.warn(`Failed to fetch from ${allServices[index]}:`, result.reason);
+              return [];
+            })
+            .flat();
+            
+          if (data.length === 0) {
+            throw new Error('Could not load content from any streaming service. Please try again.');
+          }
         } else {
           data = await fetchShows(service);
         }

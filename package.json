@@ -4,9 +4,9 @@
   "type": "module",
   "description": "Discover and search streaming content ranked by Rotten Tomatoes scores using Google Gemini AI.",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview --host"
   },
   "dependencies": {
     "react": "^18.3.0",
