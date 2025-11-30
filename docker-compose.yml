@@ -1,0 +1,24 @@
+# Podman Compose configuration for iRankThee AI
+version: '3.8'
+
+services:
+  irankthee:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      platform: linux/arm64
+    container_name: irankthee-ai
+    ports:
+      - "8080:80"
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "com.irankthee.app=irankthee-ai"
+      - "com.irankthee.version=1.0.0"

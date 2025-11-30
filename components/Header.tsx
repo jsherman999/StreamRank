@@ -13,7 +13,7 @@ export const Header: React.FC = () => {
             </div>
           </div>
           <h1 className="text-xl font-bold tracking-tight text-white">
-            StreamRank<span className="text-red-500">.AI</span>
+            iRankThee<span className="text-red-500">.AI</span>
           </h1>
         </div>
         

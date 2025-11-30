@@ -155,7 +155,7 @@ const App: React.FC = () => {
         <p>
           Data sourced via AI search grounding. Rotten Tomatoes scores are approximations based on search results.
           <br />
-          StreamRank AI &copy; {new Date().getFullYear()}
+          iRankThee AI &copy; {new Date().getFullYear()}
         </p>
       </footer>
     </div>

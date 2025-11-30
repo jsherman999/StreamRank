@@ -1,5 +1,5 @@
 {
-  "name": "streamrank-ai",
+  "name": "irankthee-ai",
   "version": "1.0.0",
   "description": "Discover and search streaming content ranked by Rotten Tomatoes scores using Google Gemini AI.",
   "scripts": {
